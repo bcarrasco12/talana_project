@@ -5,3 +5,4 @@ from adventure import models
 admin.site.register(models.VehicleType)
 admin.site.register(models.Vehicle)
 admin.site.register(models.Journey)
+admin.site.register(models.ServiceArea)

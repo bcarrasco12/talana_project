@@ -9,10 +9,10 @@ class JourneyRepository:
         return car
 
     def create_vehicle(
-        self, name: str, passengers: int, vehicle_type: models.VehicleType, number_plate: str, fuel_tank_size: float
+        self, name: str, passengers: int, vehicle_type: models.VehicleType
     ) -> models.Vehicle:
         return models.Vehicle.objects.create(
-            name=name, passengers=passengers, vehicle_type=vehicle_type, number_plate=number_plate, fuel_tank_size=fuel_tank_size
+            name=name, passengers=passengers, vehicle_type=vehicle_type
         )
 
     def create_journey(self, vehicle: models.Vehicle) -> models.Journey:

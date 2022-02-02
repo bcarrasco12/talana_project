@@ -12,7 +12,24 @@ from adventure.serializers import JourneySerializer
 from adventure.usecases import StartJourney
 
 
-class CreateVehicleAPIView(APIView):
+class VehicleAPIView(APIView):
+    def get(self, request, number_plate) -> Response:    
+        try:
+            vehicle = Vehicle.objects.get(number_plate=number_plate)
+            return Response(
+                {
+                    "id": vehicle.id,
+                    "name": vehicle.name,
+                    "passengers": vehicle.passengers,
+                    "vehicle_type": vehicle.vehicle_type.name,
+                    "fuel_efficiency": vehicle.fuel_efficiency,
+                    "fuel_tank_size": vehicle.fuel_tank_size
+                },
+                status=201
+            )
+        except Vehicle.DoesNotExist:
+            raise Exception("Vehicle not found")
+
     def post(self, request: Request) -> Response:        
         payload = request.data
 
@@ -29,23 +46,15 @@ class CreateVehicleAPIView(APIView):
             ignore_extra_keys=True            
         )        
 
-        if not schema.is_valid(payload):
-            return Response(
-                {
-                    "message": "Invalid data input"
-                },
-                status=400,
-            )
+        copy_payload = payload.dict() if type(payload) != dict else payload
+
+        if not schema.is_valid(copy_payload):
+            raise Exception("Invalid data input")
 
         try:
             vehicle_type = VehicleType.objects.get(name=payload["vehicle_type"])
         except VehicleType.DoesNotExist:
-            return Response(
-                {
-                    "message": "Vehicle type not found"
-                },
-                status=400,
-            ) 
+            raise Exception("Vehicle type not found")
 
         vehicle = Vehicle.objects.create(
             name=payload["name"],
@@ -62,11 +71,27 @@ class CreateVehicleAPIView(APIView):
                 "passengers": vehicle.passengers,
                 "vehicle_type": vehicle.vehicle_type.name,
             },
-            status=201,
+            status=201
         )
 
-class CreateServiceAreaAPIView(APIView):
-    def post(self, request: Request) -> Response:
+class ServiceAreaAPIView(APIView):
+    def get(self, request, kilometer) -> Response:    
+        try:
+            service_area = ServiceArea.objects.get(kilometer=kilometer)
+            return Response(
+                {
+                    "id": service_area.id,
+                    "kilometer": service_area.kilometer,
+                    "gas_price": service_area.gas_price,
+                    "left_station": service_area.left_station.kilometer if service_area.left_station else None,
+                    "right_station": service_area.right_station.kilometer if service_area.right_station else None
+                },
+                status=201
+            )
+        except ServiceArea.DoesNotExist:
+            raise Exception("ServiceArea not found")
+
+    def post(self, request: Request) -> Response:        
         payload = request.data
 
         # Validation data
@@ -78,49 +103,27 @@ class CreateServiceAreaAPIView(APIView):
             ignore_extra_keys=True           
         )                
 
-        if not schema.is_valid(payload):
-            return Response(
-                {
-                    "message": "Invalid data input"
-                },
-                status=400,
-            )
+        copy_payload = payload.dict() if type(payload) != dict else payload
+
+        if not schema.is_valid(copy_payload):        
+            raise Exception("Invalid data input")
 
         left_station = self.validate_station(payload.get("left_station"))
 
         if left_station == -1:
-            return Response(
-                {
-                    "message": "Invalid left station"
-                },
-                status=400,
-            )
+            raise Exception("Invalid left station")
 
         right_station = self.validate_station(payload.get("right_station"))
 
         if right_station == -1:
-            return Response(
-                {
-                    "message": "Invalid right station"
-                },
-                status=400,
-            )
-        
-        try:
-            service_area = ServiceArea.objects.create(
-                kilometer=payload["kilometer"],
-                gas_price=payload["gas_price"],
-                left_station=left_station,
-                right_station=right_station
-            )
-        except Exception as error:
-            return Response(
-                {
-                    "message": error
-                },
-                status=400,
-            )
-
+            raise Exception("Invalid right station")
+                
+        service_area = ServiceArea.objects.create(
+            kilometer=payload["kilometer"],
+            gas_price=payload["gas_price"],
+            left_station=left_station,
+            right_station=right_station
+        )
 
         return Response(
             {
@@ -159,3 +162,4 @@ class StartJourneyAPIView(generics.CreateAPIView):
 
     def get_repository(self) -> JourneyRepository:
         return JourneyRepository()
+        

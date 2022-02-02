@@ -1,7 +1,7 @@
 import pytest
 from django.core import mail
 
-from adventure import models, notifiers, repositories, usecases, views
+from adventure import models, notifiers, repositories, views
 
 from .test_02_usecases import MockJourneyRepository
 
@@ -27,7 +27,7 @@ class TestNotifier:
         assert mail.send_mail.called
 
 
-class TestCreateVehicleAPIView:
+class TestVehicleAPIView:
     def test_create(self, client, mocker):
         vehicle_type = models.VehicleType(name="car")
         mocker.patch.object(
@@ -40,11 +40,11 @@ class TestCreateVehicleAPIView:
                 id=1, name="Kitt", passengers=4, vehicle_type=vehicle_type
             ),
         )
-        payload = {"name": "Kitt", "passengers": 4, "vehicle_type": "car"}
+        payload = {"name": "Kitt", "passengers": 4, "vehicle_type": "car"}        
         response = client.post("/api/adventure/create-vehicle/", payload)
         assert response.status_code == 201
 
-class TestCreateServiceAreaAPIView:
+class TestServiceAreaAPIView:
     def test_create(self, client, mocker):
         mocker.patch.object(
             models.ServiceArea.objects,
@@ -54,8 +54,8 @@ class TestCreateServiceAreaAPIView:
             ),
         )
 
-        payload = {"kilometer":60, "gas_price":784}
-        response = client.post("/api/adventure/create-service-area/", payload)  
+        payload2 = {"kilometer":60, "gas_price":784}        
+        response = client.post("/api/adventure/create-service-area/", payload2)  
         assert response.status_code == 201
 
 class TestGetVehicleAPIView:
